@@ -51,6 +51,8 @@ const invertPlacement = placement => {
 };
 
 class Tooltip extends Component {
+  isMounted = false;
+
   static defaultProps = {
     allowChildInteraction: true,
     arrowSize: new Size(16, 8),
@@ -138,6 +140,7 @@ class Tooltip extends Component {
 
   componentDidMount() {
     Dimensions.addEventListener('change', this.updateWindowDims);
+    this.isMounted = true;
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -150,14 +153,17 @@ class Tooltip extends Component {
     const insetsChanged = !rfcIsEqual(prevState.displayInsets, displayInsets);
 
     if (contentChanged || placementChanged || becameVisible || insetsChanged) {
-      setTimeout(() => {
-        this.measureChildRect();
-      });
+      if (this.isMounted) {
+        setTimeout(() => {
+          this.measureChildRect();
+        });
+      }
     }
   }
 
   componentWillUnmount() {
     Dimensions.removeEventListener('change', this.updateWindowDims);
+    this.isMounted = false;
     if (this.interactionPromise) {
       this.interactionPromise.cancel();
     }
